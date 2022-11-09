@@ -1,19 +1,19 @@
 <template>
   <div>
     <form method="post" @click.prevent>
-      <input type="text" v-model="body.id" placeholder="id" />
-      <input type="text" v-model="body.accountId" placeholder="accountId" />
+      <input type="text" v-model="id" placeholder="id" />
+      <input type="text" v-model="accountId" placeholder="accountId" />
       <input
         type="text"
-        v-model="body.arrivingArabicName"
+        v-model="arrivingArabicName"
         placeholder="arrivingArabicName"
       />
       <input
         type="text"
-        v-model="body.arrivingEnglishName"
+        v-model="arrivingEnglishName"
         placeholder="arrivingEnglishName"
       />
-      <input type="text" v-model="body.sort" placeholder="sort" />
+      <input type="text" v-model="sort" placeholder="sort" />
       <input type="submit" value="Add" @click="postApi()" />
     </form>
     <div class="container">
@@ -53,19 +53,20 @@ export default {
   data() {
     return {
       info: null,
-      body: {
-        id: "",
-        accountId: "",
-        arrivingArabicName: "",
-        arrivingEnglishName: "",
-        sort: "",
-      },
+      
+        "id": null,
+        "accountId": 1,
+        "arrivingArabicName": null,
+        "arrivingEnglishName": null,
+        "sort": null,
+     
       
     };
   },
   methods: {
   
     async getApi() {
+      
       await axios
         .get(baseUrl)
         .then((res) => {
@@ -74,15 +75,26 @@ export default {
         .catch((err) => console.log(err));
     },
     async postApi() {
-      
+      let body = {};
+      body =  {
+        id: +this.id,
+            accountId: this.accountId,
+            arrivingArabicName: this.arrivingArabicName,
+            arrivingEnglishName: this.arrivingEnglishName,
+            sort: +this.sort,  
+      }
+        console.log(body);
       await axios
         .post(
-          `http://40.127.194.127:777/api/Emergency/AddOrUpdateArrivingMethod?id=${this.body.id}&accountId=${this.body.accountId}&arrivingArabicName=${this.body.arrivingArabicName}&arrivingEnglishName=${this.body.arrivingEnglishName}&sort=${this.body.sort}`,
-          
-        )
+          `http://40.127.194.127:777/api/Emergency/AddOrUpdateArrivingMethod`, {
+            id: this.id,
+            accountId: this.accountId,
+            arrivingArabicName: this.arrivingArabicName,
+            arrivingEnglishName: this.arrivingEnglishName,
+            sort: this.sort,            
 
-
-        .then((res) => {
+          }
+        ).then((res) => {
           this.body = "";
           setApi(res.data.token)
           this.getApi();
@@ -104,6 +116,7 @@ export default {
           }
         )
         .then((res) => {
+          setApi(res.data.token)
           this.getApi();
           this.body = "";
           console.log(res);
@@ -117,6 +130,7 @@ export default {
           this.body.id
         )
         .then((res) => {
+          setApi(res.data.token)
           this.getApi();
           console.log(res);
         })
