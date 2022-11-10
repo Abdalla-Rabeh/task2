@@ -29,14 +29,14 @@
             <th>Delete</th>
           </tr>
         </thead>
-        <tbody v-for="currency in info" :key="currency.id">
+        <tbody v-for="Data in info" :key="Data.id">
           <tr>
-            <td>{{ currency.id }}</td>
-            <td>{{ currency.accountId }}</td>
-            <td>{{ currency.arrivingArabicName }}</td>
-            <td>{{ currency.arrivingEnglishName }}</td>
-            <td>{{ currency.sort }}</td>
-            <td><button @click="PutApi(body)">Update</button></td>
+            <td>{{ Data.id }}</td>
+            <td>{{ Data.accountId }}</td>
+            <td>{{ Data.arrivingArabicName }}</td>
+            <td>{{ Data.arrivingEnglishName }}</td>
+            <td>{{ Data.sort }}</td>
+            <td><button @click="PutApi()">Update</button></td>
             <td><button @click="delApi(body.id)">Delete</button></td>
           </tr>
         </tbody>
@@ -46,27 +46,23 @@
 </template>
 <script>
 import axios from "axios";
-import setApi from "../utils/setAPi"
-const baseUrl = "http://40.127.194.127:777/api/Emergency/GetAllArrivingMethods?first=0&page=0&rows=12";
-//! ?id=${this.body.id}&accountId=${this.body.accountId}&arrivingArabicName=${this.body.arrivingArabicName}&arrivingEnglishName=${this.body.arrivingEnglishName}&sort=${this.body.sort}
+const baseUrl =
+  "http://40.127.194.127:777/api/Emergency/GetAllArrivingMethods?first=0&page=0&rows=12";
 export default {
   data() {
     return {
       info: null,
-      
-        "id": null,
-        "accountId": 1,
-        "arrivingArabicName": null,
-        "arrivingEnglishName": null,
-        "sort": null,
-     
-      
+      id: 0,
+      accountId: 1,
+      arrivingArabicName: "",
+      arrivingEnglishName: "",
+      sort: 0,
+      err: false,
+      body: [],
     };
   },
   methods: {
-  
     async getApi() {
-      
       await axios
         .get(baseUrl)
         .then((res) => {
@@ -75,48 +71,46 @@ export default {
         .catch((err) => console.log(err));
     },
     async postApi() {
-      let body = {};
-      body =  {
-        id: +this.id,
-            accountId: this.accountId,
-            arrivingArabicName: this.arrivingArabicName,
-            arrivingEnglishName: this.arrivingEnglishName,
-            sort: +this.sort,  
-      }
-        console.log(body);
+      let body = {
+        id: parseInt(this.id),
+        accountId: this.accountId,
+        arrivingArabicName: this.arrivingArabicName,
+        arrivingEnglishName: this.arrivingEnglishName,
+        sort: parseInt(this.sort),
+      };
+      console.log(body);
       await axios
         .post(
-          `http://40.127.194.127:777/api/Emergency/AddOrUpdateArrivingMethod`, {
-            id: this.id,
-            accountId: this.accountId,
-            arrivingArabicName: this.arrivingArabicName,
-            arrivingEnglishName: this.arrivingEnglishName,
-            sort: this.sort,            
-
-          }
-        ).then((res) => {
-          this.body = "";
-          setApi(res.data.token)
-          this.getApi();
+          "http://40.127.194.127:777/api/Emergency/AddOrUpdateArrivingMethod",
+          body
+        )
+        .then((res) => {
           console.log(res);
+          this.body.push(this.info);
+          const fullData = [...this.info , body];
+          console.log(fullData);
+          this.id ='',
+          this.arrivingArabicName = '',
+          this.arrivingEnglishName = '',
+          this.getApi()
         })
-        .catch((err) => console.log(err));
-      
+        .catch(() => {
+          this.err = true;
+        });
     },
-    async PutApi(body) {
+    async PutApi() {
       await axios
         .put(
-          `http://40.127.194.127:777/api/Emergency/AddOrUpdateArrivingMethod${body.id}`,
+          `http://40.127.194.127:777/api/Emergency/AddOrUpdateArrivingMethod${this.id}`,
           {
-            id: this.body.id,
             accountId: this.body.accountId,
             arrivingArabicName: this.body.arrivingArabicName,
             arrivingEnglishName: this.body.arrivingEnglishName,
             sort: this.body.sort,
-          }
+          },
+          {headers: 'Access-Control-Allow-Origin : *'},
         )
         .then((res) => {
-          setApi(res.data.token)
           this.getApi();
           this.body = "";
           console.log(res);
@@ -127,10 +121,9 @@ export default {
       await axios
         .delete(
           `http://40.127.194.127:777/api/Emergency/DeleteArrivingMethod`,
-          this.body.id
+          this.id
         )
         .then((res) => {
-          setApi(res.data.token)
           this.getApi();
           console.log(res);
         })
